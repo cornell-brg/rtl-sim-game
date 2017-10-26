@@ -167,7 +167,7 @@ class IntDivRem4Ctrl( Model ):
     s.STATE_DONE = 1
     s.STATE_CALC = 1+nbits/2
 
-    s.state = RegRst( 1+clog2(nbits), reset_value = s.STATE_IDLE )
+    s.state = RegRst( 1+clog2(nbits/2), reset_value = s.STATE_IDLE )
 
     @s.combinational
     def state_transitions():
