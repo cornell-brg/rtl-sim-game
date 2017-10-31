@@ -245,24 +245,3 @@ class IntDivRem4(object):
     dpath.remainder_mux_sel <<= ctrl.remainder_mux_sel
     dpath.remainder_reg_en <<= ctrl.remainder_reg_en
     dpath.divisor_mux_sel <<= ctrl.divisor_mux_sel
-
-if __name__ == '__main__':
-  idiv = IntDivRem4( 14 )
-  # sim = FastSimulation(code_file="sb.txt")
-  sim = Simulation()
-
-  sim.step({
-    idiv.reset: 1,
-    idiv.req_val: 1,
-    idiv.req_msg: (7<<14)+2,
-    idiv.resp_rdy: 1,
-  })
-
-  for cycle in range(15):
-    sim.step({
-      idiv.reset: 0,
-      idiv.req_val: 1,
-      idiv.req_msg: 0x01e413b,
-      idiv.resp_rdy: 1,
-    })
-    print sim.inspect( idiv.resp_val ), hex(sim.inspect( idiv.resp_msg ))
