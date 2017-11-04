@@ -15,8 +15,8 @@ class IntDivRem4( VerilogModel ):
 
     # Interface
 
-    s.req   = InValRdyBundle  ( 256 )
-    s.resp  = OutValRdyBundle ( 256 )
+    s.req   = InValRdyBundle  ( 128 )
+    s.resp  = OutValRdyBundle ( 128 )
 
     s.set_ports({
       'clock'         : s.clk,

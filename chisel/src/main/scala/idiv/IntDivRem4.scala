@@ -108,6 +108,7 @@ class IntDivRem4Ctrl(nbits: Int) extends Module {
   {
     state := state - 1.U
   }
+
   // state output
   when (state === STATE_IDLE)
   {
@@ -161,16 +162,6 @@ class IntDivRem4Dpath(nbits: Int) extends Module {
 
   val sub1_out = Wire( UInt((nbits*2).W) )
   val sub2_out = Wire( UInt((nbits*2).W) )
-
-  // val remainder_mux_out = Wire( UInt((nbits*2).W) )
-
-  // when (io.cs.remainder_mux_sel === R_MUX_SEL_IN) {
-    // remainder_mux_out := Cat( Fill(nbits, 0.U), io.req_msg(nbits-1,0) )
-  // } .elsewhen (io.cs.remainder_mux_sel === R_MUX_SEL_SUB1) {
-    // remainder_mux_out := sub1_out
-  // } .otherwise {
-    // remainder_mux_out := sub2_out
-  // }
 
   val remainder_mux_out = MuxLookup( io.cs.remainder_mux_sel, UInt(0), Seq(
     R_MUX_SEL_IN   -> Cat( Fill(nbits, 0.U), io.req_msg(nbits-1,0) ),
@@ -261,5 +252,5 @@ class IntDivRem4(nbits: Int) extends Module {
 }
 
 object MyDriver extends App {
-  chisel3.Driver.execute(args, () => new IntDivRem4(128))
+  chisel3.Driver.execute(args, () => new IntDivRem4(64))
 }

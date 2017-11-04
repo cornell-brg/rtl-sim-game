@@ -59,20 +59,8 @@ def gen_msgs( nbits ):
 # Test cases
 #-------------------------------------------------------------------------
 
-def test_14( dump_vcd, test_verilog ):
-  src_msgs, sink_msgs = gen_msgs( 14 )
-  run_sim( TestHarness( 14,
-                        src_msgs, sink_msgs, 0, 0,
-                        dump_vcd, test_verilog ) )
-
 def test_64_delay( dump_vcd, test_verilog ):
   src_msgs, sink_msgs = gen_msgs( 64 )
   run_sim( TestHarness( 64,
                         src_msgs, sink_msgs, 3, 14,
-                        dump_vcd, test_verilog ) )
-
-def test_128( dump_vcd, test_verilog ):
-  src_msgs, sink_msgs = gen_msgs( 128 )
-  run_sim( TestHarness( 128,
-                        src_msgs, sink_msgs, 0, 0,
                         dump_vcd, test_verilog ) )
