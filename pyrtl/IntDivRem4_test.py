@@ -64,7 +64,7 @@ def run_sim( nbits, src_msgs, sink_msgs ):
     if resp_val and sink_msgs:
       sink_msg = sink_msgs.pop(0)
       assert sink_msg == sim.inspect(idiv.resp_msg)
-    
+
     cycle += 1
     print "%d:" % cycle, valrdy_to_str( hex(sim.inspect(idiv.req_msg))[2:], \
                          sim.inspect(idiv.req_val), \
