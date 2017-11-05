@@ -1,0 +1,133 @@
+#!/usr/bin/env python
+#=========================================================================
+# idiv-sim [options]
+#=========================================================================
+#
+#  -h --help           Display this message
+#
+#  --cycle             number of cycles
+#  --trace             Display line tracing
+
+#-------------------------------------------------------------------------
+# Command line processing
+#-------------------------------------------------------------------------
+import argparse, os, sys, timeit
+
+sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
+while sim_dir:
+  if os.path.exists( sim_dir + os.path.sep + ".pymtl-python-path" ):
+    sys.path.insert(0,sim_dir)
+    break
+  sim_dir = os.path.dirname(sim_dir)
+
+sys.path.insert(0, os.path.join(os.path.dirname(sim_dir),"myhdl") )
+
+class ArgumentParserWithCustomError(argparse.ArgumentParser):
+  def error( self, msg = "" ):
+    if ( msg ): print("\n ERROR: %s" % msg)
+    print("")
+    file = open( sys.argv[0] )
+    for ( lineno, line ) in enumerate( file ):
+      if ( line[0] != '#' ): sys.exit(msg != "")
+      if ( (lineno == 2) or (lineno >= 4) ): print( line[1:].rstrip("\n") )
+
+def parse_cmdline():
+  p = ArgumentParserWithCustomError( add_help=False )
+
+  # Standard command line arguments
+
+  p.add_argument( "-h", "--help",    action="store_true" )
+
+  # Additional commane line arguments for the simulator
+
+  p.add_argument( "--cycle", default=100, type=int )
+  p.add_argument( "--nbits", default=64, type=int )
+  p.add_argument( "--trace", action="store_true"    )
+
+  opts = p.parse_args()
+  if opts.help: p.error()
+  return opts
+
+from myhdl import *
+from IntDivRem4 import IntDivRem4
+
+# myhdl makes it very difficult to inspect some internal variable
+cycle  = 0
+ans    = 0
+passed = 0
+
+def SimHarness( nbits ):
+  clk = Signal(False)
+  rst = Signal(False)
+
+  req_val = Signal(True)
+  req_rdy = Signal(False)
+  req_msg = Signal( modbv(0)[nbits*2:0] )
+  resp_val = Signal(False)
+  resp_rdy = Signal(True)
+  resp_msg = Signal( modbv(0)[nbits*2:0] )
+
+  idiv = IntDivRem4(clk, rst, req_val, req_rdy, req_msg,
+                              resp_val, resp_rdy, resp_msg, nbits )
+
+  from divider_input.python_input import inp, oup
+  l = len(inp)
+
+  @instance
+  def rstgen():
+    rst.next = 1
+    yield delay(2)
+    rst.next = 0
+
+  @always(delay(1))
+  def clkgen():
+    global cycle
+    clk.next = not clk
+    cycle += int(clk)
+
+  @always_comb
+  def src_sink():
+    global cycle, ans, passed
+
+    if req_rdy:
+      req_msg.next = inp[cycle % l]
+      ans = oup[cycle % l]
+
+    if resp_val:
+      assert resp_msg == ans
+      passed += 1
+
+  return instances()
+
+def main():
+  try:
+    import pypyjit
+    pypyjit.set_param("off")
+  except:
+    pass
+
+  opts = parse_cmdline()
+
+  nbits = opts.nbits
+
+  sim = Simulation( SimHarness( nbits ) )
+
+  ncycles = opts.cycle
+
+  try:
+    pypyjit.set_param("default")
+    pypyjit.set_param("trace_limit=100000000")
+  except:
+    pass
+
+  start_time = timeit.default_timer()
+
+  # Note that every cycle has two edges and we need 2 edges for 1 cycle
+  sim.run( ncycles*2 )
+
+  end_time = timeit.default_timer()
+
+  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
+        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
+
+main()

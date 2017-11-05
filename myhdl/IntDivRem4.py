@@ -1,18 +1,3 @@
-import random
-random.seed(0xdeadbeef)
-
-import pytest
-import sys
-import os
-sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
-while sim_dir:
-  if os.path.exists( sim_dir + os.path.sep + ".pymtl-python-path" ):
-    sys.path.insert(0,sim_dir)
-    break
-  sim_dir = os.path.dirname(sim_dir)
-
-sys.path.insert(0, os.path.join(os.path.dirname(sim_dir),"myhdl") )
-
 from myhdl import *
 
 #-------------------------------------------------------------------------
@@ -173,7 +158,7 @@ def IntDivRem4Ctrl( clk, rst, req_val, req_rdy, resp_val, resp_rdy, cs,
   return instances()
 
 def IntDivRem4Dpath( clk, rst, req_msg, resp_msg, cs,
-                     nbits=64 ):
+                     nbits=64, line_trace=False ):
 
   remainder_reg_out = Signal( modbv(0)[nbits*2:] )
   remainder_mux_out = Signal( modbv(0)[nbits*2:] )
@@ -269,12 +254,6 @@ def IntDivRem4Dpath( clk, rst, req_msg, resp_msg, cs,
   def comb_resp_msg():
     resp_msg.next = concat( quotient_reg_out, remainder_reg_out[nbits:0] )
 
-  @always(clk.posedge)
-  def line_trace():
-    print "{} >> Rem:{} Quo:{} Div:{} >>> {}".format( req_msg, remainder_reg_out,
-                                          quotient_reg_out,
-                                          divisor_reg_out, resp_msg )
-
   return instances()
 
 def IntDivRem4(clk, rst,
@@ -286,62 +265,3 @@ def IntDivRem4(clk, rst,
   dpath = IntDivRem4Dpath( clk, rst, req_msg, resp_msg, cs, nbits )
 
   return instances()
-
-def gen_msgs( nbits ):
-  src_msgs  = []
-  sink_msgs = []
-
-  for i in xrange(10):
-    x = random.randint(2, 2**nbits-1)
-    y = random.randint(1, min(x, 2**(nbits/3*2)))
-    z = modbv(0)[nbits*2:]
-    z[nbits:0]  = x
-    z[nbits*2:nbits] = y
-    src_msgs.append( z )
-    sink_msgs.append( modbv(((x / y) << nbits) | (x % y))[nbits*2:] )
-
-  return src_msgs, sink_msgs
-
-def TestHarness( nbits, src_msgs, sink_msgs ):
-  clk = Signal(False)
-  rst = Signal(False)
-
-  req_val = Signal(True)
-  req_rdy = Signal(False)
-  req_msg = Signal( modbv(src_msgs.pop(0))[nbits*2:0] )
-  resp_val = Signal(False)
-  resp_rdy = Signal(True)
-  resp_msg = Signal( modbv(0)[nbits*2:0] )
-
-  idiv = IntDivRem4(clk, rst, req_val, req_rdy, req_msg,
-                              resp_val, resp_rdy, resp_msg, nbits )
-  tmp = Signal(modbv(0)[nbits:0])
-
-  @always(delay(1))
-  def clkgen():
-    clk.next = not clk
-
-  @always(clk.posedge)
-  def src():
-    if req_val and req_rdy:
-      if src_msgs:
-        req_msg.next = src_msgs.pop(0)
-      else:
-        req_val.next = 0
-
-  @always_comb
-  def sink():
-    if sink_msgs:
-      if resp_rdy and resp_val:
-        sink_msg = sink_msgs.pop(0)
-        if resp_msg != sink_msg:
-          raise StopSimulation("Test Failed! [ {} != {} ]".format(resp_msg, sink_msg))
-    else:
-      raise StopSimulation("Test Passed!")
-
-  return instances()
-
-if __name__ == "__main__":
-  src_msgs, sink_msgs = gen_msgs( 14 )
-  sim = Simulation(TestHarness(14,src_msgs, sink_msgs))
-  sim.run(5000)
