@@ -64,12 +64,11 @@ def main():
 
   idiv = IntDivRem4( nbits )
   SimRTLPass().apply( idiv )
+  idiv.sim_reset()
 
   # Multiple runs don't make a different since jit trace is shared
 
   ncycles = opts.cycle
-
-  idiv.resp.rdy = Bits1( 1 )
 
   try:
     pypyjit.set_param("default")
@@ -82,29 +81,28 @@ def main():
   from divider_input.python_input import inp, oup
 
   l = len(inp)
-  ans = 0
+  ans = passed = 0
 
   start_time = timeit.default_timer()
   for cycle in xrange(ncycles):
     idiv.resp.rdy = Bits1( 1 )
     idiv.req.val  = Bits1( 1 )
     idiv.req.msg  = dtype( inp[cycle % l] )
+
     idiv.tick()
+
+    if idiv.req.rdy:
+      ans = oup[cycle % l]
+    if idiv.resp.val:
+      assert idiv.resp.msg == ans
+      passed += 1
 
     if opts.trace:
       print idiv.line_trace()
 
-    if idiv.req.rdy:
-      ans = oup[cycle % l]
-
-    if idiv.resp.val:
-      assert idiv.resp.msg == ans
-
-  print idiv.line_trace()
-
   end_time = timeit.default_timer()
 
-  print "idiv: {:10.0f} cps = {:10d} cycles / {:.5f} sec".format \
-        ( ncycles/(end_time - start_time), ncycles, end_time - start_time )
+  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
+        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
 
 main()
