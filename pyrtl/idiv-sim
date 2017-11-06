@@ -7,7 +7,7 @@
 #
 #  --cycle             number of cycles
 #  --trace             Display line tracing
-#  --sim               {normal, fast, compiled}/default is normal
+#  --sim               {normal, fast, compiled}
 
 #-------------------------------------------------------------------------
 # Command line processing
@@ -44,7 +44,7 @@ def parse_cmdline():
   p.add_argument( "--cycle", default=100, type=int )
   p.add_argument( "--nbits", default=64, type=int )
   p.add_argument( "--trace", action="store_true"    )
-  p.add_argument( "--sim",   default="normal", choices=["normal","fast","compiled"] )
+  p.add_argument( "--sim",   required=True, choices=["normal","fast","compiled"] )
 
   opts = p.parse_args()
   if opts.help: p.error()
@@ -52,49 +52,6 @@ def parse_cmdline():
 
 from pyrtl import *
 from IntDivRem4 import IntDivRem4
-
-def run_sim( nbits, src_msgs, sink_msgs ):
-  idiv = IntDivRem4( nbits )
-  sim = FastSimulation(code_file="sb" )
-
-  sim.step({
-    idiv.reset: 1,
-    idiv.req_val: 1,
-    idiv.req_msg: 0,
-    idiv.resp_rdy: 1,
-  })
-
-  cycle = 0
-  src_msg = src_msgs.pop(0)
-
-  print
-  while (src_msgs or sink_msgs) and cycle < 5000:
-    sim.step({
-      idiv.reset: 0,
-      idiv.req_val: 1,
-      idiv.req_msg: src_msg,
-      idiv.resp_rdy: 1,
-    })
-
-    req_rdy = sim.inspect(idiv.req_rdy)
-    resp_val = sim.inspect(idiv.resp_val)
-
-    if req_rdy and src_msgs:
-      src_msg = src_msgs.pop(0)
-
-    if resp_val and sink_msgs:
-      sink_msg = sink_msgs.pop(0)
-      assert sink_msg == sim.inspect(idiv.resp_msg)
-
-    cycle += 1
-    print "%d:" % cycle, valrdy_to_str( hex(sim.inspect(idiv.req_msg))[2:], \
-                         sim.inspect(idiv.req_val), \
-                         sim.inspect(idiv.req_rdy) ), ">>>",\
-          valrdy_to_str( hex(sim.inspect(idiv.resp_msg))[2:], \
-                         sim.inspect(idiv.resp_val), \
-                         sim.inspect(idiv.resp_rdy) )
-
-  reset_working_block()
 
 def main():
   try:

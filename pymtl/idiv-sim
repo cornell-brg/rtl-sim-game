@@ -7,7 +7,7 @@
 #
 #  --cycle             number of cycles
 #  --trace             Display line tracing
-#  --simjit-rtl        SIMJIT-RTL
+#  --sim               {python, simjit}
 
 #-------------------------------------------------------------------------
 # Command line processing
@@ -44,7 +44,7 @@ def parse_cmdline():
   p.add_argument( "--cycle", default=100, type=int )
   p.add_argument( "--nbits", default=64, type=int )
   p.add_argument( "--trace", action="store_true"    )
-  p.add_argument( "--simjit-rtl", action="store_true" )
+  p.add_argument( "--sim",   required=True, choices=["python","simjit"] )
 
   opts = p.parse_args()
   if opts.help: p.error()
@@ -91,14 +91,15 @@ def main():
   start_time = timeit.default_timer()
 
   for cycle in xrange(ncycles):
-    sim.cycle()
-
     idiv.resp.rdy.value = Bits( 1, 1 )
     idiv.req.val.value  = Bits( 1, 1 )
     idiv.req.msg.value  = Bits( nbits*2, inp[cycle % l] )
 
     if idiv.req.rdy:
       ans = oup[cycle % l]
+
+    sim.cycle()
+
     if idiv.resp.val:
       assert idiv.resp.msg == ans
       passed += 1

@@ -93,6 +93,7 @@ def main():
 
     if idiv.req.rdy:
       ans = oup[cycle % l]
+
     if idiv.resp.val:
       assert idiv.resp.msg == ans
       passed += 1
