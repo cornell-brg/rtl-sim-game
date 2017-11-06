@@ -1,5 +1,5 @@
 # This is the PyMTL wrapper for the corresponding Verilog RTL model.
-
+import os
 from pymtl        import *
 from pclib.ifcs   import InValRdyBundle, OutValRdyBundle
 
@@ -7,8 +7,7 @@ class IntDivRem4( VerilogModel ):
 
   # Verilog module setup
 
-  # vlinetrace = True
-
+  modulename = 'IntDivRem4_raw'
   # Constructor
 
   def __init__( s ):

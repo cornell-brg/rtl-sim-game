@@ -342,3 +342,5 @@ hs_err_pid*
 *.fir
 *.anno
 *.v
+
+!IntDivRem4.v

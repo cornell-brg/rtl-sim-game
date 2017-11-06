@@ -233,7 +233,7 @@ class IntDivRem4Dpath(nbits: Int) extends Module {
   io.resp_msg := Cat( quotient_reg.io.out, remainder_reg.io.out(nbits-1,0) )
 }
 
-class IntDivRem4(nbits: Int) extends Module {
+class IntDivRem4_raw(nbits: Int) extends Module {
   val io = IO(new Bundle {
     val req  = Flipped( Decoupled( UInt((nbits*2).W) ) )
     val resp = Decoupled(UInt((nbits*2).W))
@@ -252,5 +252,5 @@ class IntDivRem4(nbits: Int) extends Module {
 }
 
 object MyDriver extends App {
-  chisel3.Driver.execute(args, () => new IntDivRem4(64))
+  chisel3.Driver.execute(args, () => new IntDivRem4_raw(64))
 }
