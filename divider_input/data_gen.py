@@ -28,7 +28,16 @@ with open( "python_input.py", "w") as f:
 with open( "verilog_input.v", "w") as f:
   f.write("num_inputs = %d;\n" % len(inp))
   for i in xrange(ninputs):
-    f.write( "init( %d, 128'h%s, 128'h%s );\n" % (i, hex(inp[i])[2:], hex(oup[i])[2:]) );
+
+    x = hex(inp[i])[2:]
+    if x[-1] == 'L':
+      x = x[:-1]
+
+    y = hex(oup[i])[2:]
+    if y[-1] == 'L':
+      y = y[:-1]
+
+    f.write( "init( %d, 128'h%s, 128'h%s );\n" % (i, x, y) );
 
 # dump to C++ file
 with open( "cpp_input.dat", "w") as f:
