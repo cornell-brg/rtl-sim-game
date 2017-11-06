@@ -3,7 +3,7 @@ random.seed(0xdeadbeef)
 
 ninputs = 10009
 
-inp = [ (random.randint(0,3*2**62) | ((107 << random.randint(0,57))<<64)) for _ in xrange(ninputs) ]
+inp = [ (random.randint(0,3*2**32)<<random.randint(0,30) | ((random.randint(1,127) << random.randint(0,57))<<64)) for _ in xrange(ninputs) ]
 oup = [ ((((x & ((1<<64)-1))/(x>>64))<<64) | ((x & ((1<<64)-1))%(x>>64))) for x in inp ]
 
 # Verify

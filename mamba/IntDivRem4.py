@@ -78,11 +78,14 @@ class IntDivRem4Dpath( RTLComponent ):
     s.quotient_lsh = LShifter( dtype, 2 )( in_ = s.quotient_reg.out )
     s.connect( s.quotient_lsh.shamt, 2 )
 
+    s.inc = Wire( Bits2 )
+    s.connect( s.sub_negative1, s.inc[1] )
+    s.connect( s.sub_negative2, s.inc[0] )
+
     @s.update
     def up_quotient_inc():
-      s.quotient_mux.in_[Q_MUX_SEL_LSH] = s.quotient_lsh.out + \
-                                          concat(~s.sub_negative1,
-                                                 ~s.sub_negative2)
+      s.quotient_mux.in_[Q_MUX_SEL_LSH] = s.quotient_lsh.out + ~s.inc
+      # print concat(~s.sub_negative1, ~s.sub_negative2), s.inc, ~s.inc
 
     # stage 1/2
 
