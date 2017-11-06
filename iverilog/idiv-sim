@@ -44,9 +44,11 @@ def parse_cmdline():
 def main():
   opts = parse_cmdline()
 
+  folder = "verilog_src" if opts.vsrc == "verilog" else "chisel"
+
   compile_command = [ "iverilog", "-s", "top", "-g2012", "-Wall",  "-Wno-sensitivity-entire-vector",
-                      "-Wno-sensitivity-entire-array", "-I.." ,"idiv-sim-{}.v".format(opts.vsrc), "-o",
-                      "idiv-sim-{}-exe".format(opts.vsrc) ]
+                      "-Wno-sensitivity-entire-array", "-I.." ,"../{}/idiv-sim-{}.v".format(folder, opts.vsrc),
+                      "-o", "idiv-sim-{}-exe".format(opts.vsrc) ]
   try:
     result = check_output( compile_command ).strip()
   except CalledProcessError as e:
