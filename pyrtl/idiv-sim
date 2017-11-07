@@ -69,7 +69,7 @@ def main():
     sim = Simulation()
   elif opts.sim == "fast":
     idiv = IntDivRem4( nbits )
-    sim = FastSimulation(code_file="sb" )
+    sim = FastSimulation()
   else:
     assert opts.sim == "compiled"
     # !!!PyRTL only supports < 128 bit and they extend one more bit for
@@ -122,7 +122,7 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
-        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
+  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [pyrtl-{}]".format \
+        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time, opts.sim )
 
 main()

@@ -73,8 +73,8 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "{}: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
-        ( result, opts.cycle/(end_time - start_time), opts.cycle, end_time - start_time )
+  print "{}: {:8.0f} cps = {:11d} cycles / {:.3f} sec [iverilog-{}]".format \
+        ( result, opts.cycle/(end_time - start_time), opts.cycle, end_time - start_time, opts.vsrc )
 
 
 main()

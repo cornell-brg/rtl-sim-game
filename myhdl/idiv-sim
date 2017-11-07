@@ -127,7 +127,7 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
+  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [myhdl]".format \
         ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
 
 main()

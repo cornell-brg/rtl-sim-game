@@ -47,7 +47,7 @@ def main():
   folder = "verilog_src" if opts.vsrc == "verilog" else "chisel"
 
   compile_command = [ "vcs", "-full64", "-sverilog", "-line", "+lint=all,noVCDE,noTFIPC,noIWU,noOUDPE",
-                      "+v2k", "-timescale=1ns/10ps", "+vcs+initreg+random",
+                      "+v2k", "+rad", "-timescale=1ns/10ps", "+vcs+initreg+random",
                       "+neg_tchk","-noIncrComp",
                       "+incdir+.." ,"../{}/idiv-sim-{}.v".format(folder, opts.vsrc),
                       "-o", "idiv-sim-{}-exe".format(opts.vsrc) ]
@@ -76,8 +76,8 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "{}: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
-        ( result, opts.cycle/(end_time - start_time), opts.cycle, end_time - start_time )
+  print "{}: {:8.0f} cps = {:11d} cycles / {:.3f} sec [vcs-{}]".format \
+        ( result, opts.cycle/(end_time - start_time), opts.cycle, end_time - start_time, opts.vsrc )
 
 
 main()

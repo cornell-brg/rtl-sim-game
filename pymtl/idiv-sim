@@ -67,7 +67,7 @@ def main():
   idiv = IntDivRem4( nbits )
 
   # SIMJIT-RTL
-  if opts.simjit_rtl:
+  if opts.sim == "simjit":
     idiv = TranslationTool( idiv )
 
   idiv.elaborate()
@@ -109,7 +109,7 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec".format \
-        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
+  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [pymtl-{}]".format \
+        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time, opts.sim )
 
 main()
