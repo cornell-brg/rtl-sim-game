@@ -59,6 +59,7 @@ def main():
   compilation_start_time = timeit.default_timer()
 
   try:
+    import pypyjit
     pypyjit.set_param("default")
     pypyjit.set_param("trace_limit=100000000")
   except:
