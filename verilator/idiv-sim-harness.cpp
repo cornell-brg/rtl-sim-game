@@ -15,9 +15,9 @@ inline void cycle(VIntDivRem4 *model)
 
 int main(int argc, char **argv)
 {
-  if (argc != 3)
+  if (argc != 4)
   {
-    printf("Please give exactly 2 arguments for (1)trace and (2)ncycle\n");
+    printf("Please give exactly 3 arguments for (1)trace, (2)ncycle and (3)nbits\n");
     return 1;
   }
   int trace;
@@ -25,6 +25,9 @@ int main(int argc, char **argv)
 
   long long ncycle;
   sscanf(argv[2], "%lld", &ncycle);
+
+  int nbits;
+  sscanf(argv[3], "%d", &nbits);
 
   VIntDivRem4 *idiv = new VIntDivRem4();
 
@@ -35,7 +38,10 @@ int main(int argc, char **argv)
   cycle(idiv);
 
   long long time = 0, passed = 0;
-  int ans0, ans1, ans2, ans3;
+
+  int len = (nbits*2-1)/32+1;
+
+  int *ans = new int[len];
 
   for (long long time=0; time<ncycle; ++time)
   {
@@ -44,18 +50,12 @@ int main(int argc, char **argv)
 
     int idx = time % num_inputs;
 
-    idiv->req_msg[0] = inp[idx][0];
-    idiv->req_msg[1] = inp[idx][1];
-    idiv->req_msg[2] = inp[idx][2];
-    idiv->req_msg[3] = inp[idx][3];
+    for (int i=0; i<len; ++i)
+      idiv->req_msg[i] = inp[idx][i];
 
     if (idiv->req_rdy)
-    {
-      ans0 = oup[idx][0];
-      ans1 = oup[idx][1];
-      ans2 = oup[idx][2];
-      ans3 = oup[idx][3];
-    }
+      for (int i=0; i<len; ++i)
+        ans[i] = oup[idx][i];
 
     cycle(idiv);
 
@@ -66,12 +66,12 @@ int main(int argc, char **argv)
 
     if (idiv->resp_val)
     {
-      if ( idiv->resp_msg[0] != ans0 || idiv->resp_msg[1] != ans1 ||
-           idiv->resp_msg[2] != ans2 || idiv->resp_msg[3] != ans3 )
-      {
-        printf("Test Failed\n");
-        return 1;
-      }
+      for (int i=0; i<len; ++i)
+        if (idiv->resp_msg[i] != ans[i])
+        {
+          printf("Test Failed\n");
+          return 1;
+        }
       passed += 1;
     }
   }
