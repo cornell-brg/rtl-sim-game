@@ -52,17 +52,21 @@ def parse_cmdline():
 
 from pymtl import *
 from IntDivRem4 import IntDivRem4
+from divider_input.python_input import inp, oup
 
 def main():
+  # + Capture compilation time!
+  compilation_start_time = timeit.default_timer()
+
   try:
-    import pypyjit
-    pypyjit.set_param("off")
+    pypyjit.set_param("default")
+    pypyjit.set_param("trace_limit=100000000")
   except:
     pass
 
-  opts = parse_cmdline()
-
-  nbits = opts.nbits
+  opts    = parse_cmdline()
+  nbits   = opts.nbits
+  ncycles = opts.cycle
 
   idiv = IntDivRem4( nbits )
 
@@ -72,28 +76,24 @@ def main():
 
   idiv.elaborate()
   sim = SimulationTool( idiv )
-
   sim.reset()
 
-  ncycles = opts.cycle
-
-  try:
-    pypyjit.set_param("default")
-    pypyjit.set_param("trace_limit=100000000")
-  except:
-    pass
-
-  from divider_input.python_input import inp, oup
+  dtype = nbits * 2
 
   l = len(inp)
   ans = passed = 0
+
+  # - Capture compilation time!
+  compilation_time = timeit.default_timer() - compilation_start_time
+
+  # Now time the execution
 
   start_time = timeit.default_timer()
 
   for cycle in xrange(ncycles):
     idiv.resp.rdy.value = Bits( 1, 1 )
     idiv.req.val.value  = Bits( 1, 1 )
-    idiv.req.msg.value  = Bits( nbits*2, inp[cycle % l] )
+    idiv.req.msg.value  = Bits( dtype, inp[cycle % l] )
 
     if idiv.req.rdy:
       ans = oup[cycle % l]
@@ -109,7 +109,7 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [pymtl-{}]".format \
-        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time, opts.sim )
+  print "Compilation: {:.3f} sec | [{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [pymtl-{}]".format \
+        ( compilation_time, passed, ncycles/(end_time - start_time), ncycles, end_time - start_time, opts.sim )
 
 main()

@@ -100,25 +100,25 @@ def SimHarness( nbits ):
   return instances()
 
 def main():
-  try:
-    import pypyjit
-    pypyjit.set_param("off")
-  except:
-    pass
-
-  opts = parse_cmdline()
-
-  nbits = opts.nbits
-
-  sim = Simulation( SimHarness( nbits ) )
-
-  ncycles = opts.cycle
+  # + Capture compilation time!
+  compilation_start_time = timeit.default_timer()
 
   try:
     pypyjit.set_param("default")
     pypyjit.set_param("trace_limit=100000000")
   except:
     pass
+
+  opts    = parse_cmdline()
+  nbits   = opts.nbits
+  ncycles = opts.cycle
+
+  sim = Simulation( SimHarness( nbits ) )
+
+  # - Capture compilation time!
+  compilation_time = timeit.default_timer() - compilation_start_time
+
+  # Now time the execution
 
   start_time = timeit.default_timer()
 
@@ -127,7 +127,7 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [myhdl]".format \
-        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
+  print "Compilation: {:.3f} sec | [{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [myhdl]".format \
+        ( compilation_time, passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
 
 main()

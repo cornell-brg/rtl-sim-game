@@ -50,25 +50,11 @@ def parse_cmdline():
 
 from pymtl import *
 from IntDivRem4 import IntDivRem4
+from divider_input.python_input import inp, oup
 
 def main():
-  try:
-    import pypyjit
-    pypyjit.set_param("off")
-  except:
-    pass
-
-  opts = parse_cmdline()
-
-  nbits = opts.nbits
-
-  idiv = IntDivRem4( nbits )
-  SimRTLPass().apply( idiv )
-  idiv.sim_reset()
-
-  # Multiple runs don't make a different since jit trace is shared
-
-  ncycles = opts.cycle
+  # + Capture compilation time!
+  compilation_start_time = timeit.default_timer()
 
   try:
     pypyjit.set_param("default")
@@ -76,12 +62,23 @@ def main():
   except:
     pass
 
-  dtype = mk_bits( nbits*2 )
+  opts    = parse_cmdline()
+  nbits   = opts.nbits
+  ncycles = opts.cycle
 
-  from divider_input.python_input import inp, oup
+  idiv = IntDivRem4( nbits )
+  SimRTLPass().apply( idiv )
+  idiv.sim_reset()
+
+  dtype = mk_bits( nbits*2 )
 
   l = len(inp)
   ans = passed = 0
+
+  # - Capture compilation time!
+  compilation_time = timeit.default_timer() - compilation_start_time
+
+  # Now time the execution
 
   start_time = timeit.default_timer()
   for cycle in xrange(ncycles):
@@ -103,7 +100,7 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "[{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [mamba]".format \
-        ( passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
+  print "Compilation: {:.3f} sec | [{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [mamba]".format \
+        ( compilation_time, passed, ncycles/(end_time - start_time), ncycles, end_time - start_time )
 
 main()

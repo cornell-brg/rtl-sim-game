@@ -42,6 +42,8 @@ def parse_cmdline():
   return opts
 
 def main():
+  # + Capture compilation time!
+  compilation_start_time = timeit.default_timer()
   opts = parse_cmdline()
 
   folder = "verilog_src" if opts.vsrc == "verilog" else "chisel"
@@ -84,11 +86,14 @@ def main():
                      "{output}"
                      .format( cmd=' '.join(e.cmd), output=e.output ) )
 
-  # Run the simulation
-
   execute_command = [ "./idiv-sim-{}-exe".format(opts.vsrc),
                       "{}".format(int(opts.trace)),
                       "{}".format(opts.cycle) ]
+
+  # - Capture compilation time!
+  compilation_time = timeit.default_timer() - compilation_start_time
+
+  # Now time the execution
 
   start_time = timeit.default_timer()
 
@@ -102,8 +107,8 @@ def main():
 
   end_time = timeit.default_timer()
 
-  print "{}: {:8.0f} cps = {:11d} cycles / {:.3f} sec [verilator-{}]".format \
-        ( result, opts.cycle/(end_time - start_time), opts.cycle, end_time - start_time, opts.vsrc )
+  print "Compilation: {:.3f} sec | {}: {:8.0f} cps = {:11d} cycles / {:.3f} sec [verilator-{}]".format \
+        ( compilation_time, result, opts.cycle/(end_time - start_time), opts.cycle, end_time - start_time, opts.vsrc )
 
 
 main()
