@@ -85,7 +85,6 @@ class IntDivRem4Dpath( RTLComponent ):
     @s.update
     def up_quotient_inc():
       s.quotient_mux.in_[Q_MUX_SEL_LSH] = s.quotient_lsh.out + ~s.inc
-      # print concat(~s.sub_negative1, ~s.sub_negative2), s.inc, ~s.inc
 
     # stage 1/2
 
