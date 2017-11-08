@@ -71,7 +71,7 @@ def main():
 
   verilator_include = check_output( ["pkg-config","--variable=includedir","verilator"] ).strip()
 
-  compile_command = [ "g++", "-O3", "-fPIC", "-I"+verilator_include, "-I"+verilator_include+"/vltstd",
+  compile_command = [ "g++", "-O1", "-fstrict-aliasing", "-I"+verilator_include, "-I"+verilator_include+"/vltstd",
                       "-o", "idiv-sim-{}-exe".format( opts.vsrc ),
                       "idiv-sim-harness.cpp",
                       "build/VIntDivRem4.cpp", "build/VIntDivRem4__Syms.cpp", "build/VIntDivRem4__Dpi.cpp",
