@@ -51,7 +51,7 @@ with open( "verilog_input.v", "w") as f:
 with open( "cpp_input.dat", "w") as f:
   f.write("int num_inputs = %d;\n" % len(inp))
 
-  f.write("int inp[][4] = {\n")
+  f.write("unsigned int inp[][4] = {\n")
   for i in xrange(ninputs):
     f.write( "{%d,%d,%d,%d}" % ( int( inp[i] & ((1<<32)-1)),
                                  int( (inp[i]>>32) & ((1<<32)-1)),
@@ -63,7 +63,7 @@ with open( "cpp_input.dat", "w") as f:
     f.write("\n")
   f.write("};\n")
 
-  f.write("int oup[][4] = {\n")
+  f.write("unsigned int oup[][4] = {\n")
   for i in xrange(ninputs):
     f.write( "{%d,%d,%d,%d}" % ( int( oup[i] & ((1<<32)-1)),
                                  int( (oup[i]>>32) & ((1<<32)-1)),
