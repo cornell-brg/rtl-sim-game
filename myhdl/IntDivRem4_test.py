@@ -43,18 +43,6 @@ def TestHarness( nbits, src_msgs, sink_msgs ):
 
   return instances()
 
-def run_test( model ):
-  SimRTLPass().apply( model )
-  # PrintMetadataPass().apply( th )
-  T, maxT = 0, 5000
-
-  print
-  while not model.done():
-    model.tick()
-    print "{}: {}".format( T, model.line_trace() )
-    T += 1
-    assert T < maxT
-
 def gen_msgs( nbits ):
   src_msgs  = []
   sink_msgs = []
