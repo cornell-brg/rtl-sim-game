@@ -17,12 +17,20 @@ for i in xrange(len(inp)):
 
 # dump to python file
 with open( "python_input.py", "w") as f:
-  f.write("inp = ")
-  f.write(str(inp))
-  f.write("\n")
-  f.write("oup = ")
-  f.write(str(oup))
-  f.write("\n")
+  f.write("inp = [")
+  for i in xrange(ninputs):
+    x = str(inp[i])
+    if x[-1] == 'L':
+      x = x[:-1]
+    f.write(x+",\n")
+  f.write("]\n\n")
+  f.write("oup = [")
+  for i in xrange(ninputs):
+    x = str(oup[i])
+    if x[-1] == 'L':
+      x = x[:-1]
+    f.write(x+",\n")
+  f.write("]\n")
 
 # dump to Verilog file
 with open( "verilog_input.v", "w") as f:
