@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+#=========================================================================
+# idiv-sim [options]
+#=========================================================================
+#
+#  -h --help           Display this message
+#
+#  --cycle             number of cycles
+#  --trace             Display line tracing
+
+#-------------------------------------------------------------------------
+# Command line processing
+#-------------------------------------------------------------------------
+import argparse, os, sys, timeit
+
+sim_dir = os.path.dirname( os.path.abspath( __file__ ) )
+while sim_dir:
+  if os.path.exists( sim_dir + os.path.sep + ".project-root-path" ):
+    sys.path.insert(0,sim_dir)
+    break
+  sim_dir = os.path.dirname(sim_dir)
+
+sys.path.insert(0, os.path.join(os.path.dirname(sim_dir),"migen") )
+
+class ArgumentParserWithCustomError(argparse.ArgumentParser):
+  def error( self, msg = "" ):
+    if ( msg ): print("\n ERROR: %s" % msg)
+    print("")
+    file = open( sys.argv[0] )
+    for ( lineno, line ) in enumerate( file ):
+      if ( line[0] != '#' ): sys.exit(msg != "")
+      if ( (lineno == 2) or (lineno >= 4) ): print( line[1:].rstrip("\n") )
+
+def parse_cmdline():
+  p = ArgumentParserWithCustomError( add_help=False )
+
+  # Standard command line arguments
+
+  p.add_argument( "-h", "--help",    action="store_true" )
+
+  # Additional commane line arguments for the simulator
+
+  p.add_argument( "--cycle", default=100, type=int )
+  p.add_argument( "--nbits", default=64, type=int )
+  p.add_argument( "--trace", action="store_true"    )
+
+  opts = p.parse_args()
+  if opts.help: p.error()
+  return opts
+
+from migen import *
+from IntDivRem4 import IntDivRem4
+from divider_input.python_input import inp, oup
+
+def main():
+  # + Capture compilation time!
+  compilation_start_time = timeit.default_timer()
+
+  try:
+    import pypyjit
+    pypyjit.set_param("default")
+    pypyjit.set_param("trace_limit=100000000")
+  except:
+    pass
+
+  opts    = parse_cmdline()
+  nbits   = opts.nbits
+  ncycles = opts.cycle
+
+  l = len(inp)
+
+  idiv = IntDivRem4( nbits )
+  passed = 0
+
+  def TestHarness( idiv ):
+    nonlocal passed
+    for i in range(ncycles):
+      yield idiv.resp_rdy.eq(1)
+      if i % 337 == 1:
+        yield idiv.req_val.eq( 1 )
+        yield idiv.req_msg.eq( inp[ i % l ] )
+      else:
+        yield idiv.req_val.eq( 0 )
+        yield idiv.req_msg.eq( 0 )
+
+      yield # cycle
+
+      if i % 337 == 1 and (yield idiv.req_rdy):
+        ans = oup[ i % l ]
+
+      if opts.trace:
+        print( i, ":", " REM:", str((yield idiv.dpath.remainder_reg.out)),
+               " DIV:", str((yield idiv.dpath.divisor_reg.out)),
+               " QUO:", str((yield idiv.dpath.quotient_reg.out)) )
+
+      if (yield idiv.resp_val):
+        assert (yield idiv.resp_msg) == ans
+        passed += 1
+
+
+  # - Capture compilation time!
+  compilation_time = timeit.default_timer() - compilation_start_time
+
+  # Now time the execution
+
+  start_time = timeit.default_timer()
+
+  run_simulation( idiv, TestHarness( idiv ) )
+
+  end_time = timeit.default_timer()
+
+  print( "Compilation: {:.3f} sec | [{} passed] idiv: {:8.0f} cps = {:11d} cycles / {:.3f} sec [migen]".format \
+        ( compilation_time, passed, ncycles/(end_time - start_time), ncycles, end_time - start_time ) )
+
+main()
