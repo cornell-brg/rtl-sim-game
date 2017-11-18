@@ -49,7 +49,7 @@ def main():
   folder = "verilog_src" if opts.vsrc == "verilog" else "chisel"
 
   compile_command = [ "vcs", "-full64", "-sverilog", "-line", "+lint=all,noVCDE,noTFIPC,noIWU,noOUDPE",
-                      "+v2k", "+rad", "-timescale=1ns/10ps", "+vcs+initreg+random",
+                      "+v2k", "+rad", "-timescale=1ns/1ns", "+vcs+initreg+random",
                       "+neg_tchk","-noIncrComp",
                       "+incdir+.." ,"../{}/idiv-sim-{}.v".format(folder, opts.vsrc),
                       "-o", "idiv-sim-{}-exe".format(opts.vsrc) ]
