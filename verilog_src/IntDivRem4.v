@@ -182,6 +182,7 @@ module IntDivRem4Ctrl
 
   // state_transitions
   always @ (*) begin
+    state$in_ = state$out;
     if (state$out == STATE_IDLE) begin
       if (req_val && req_rdy)
         state$in_ = STATE_CALC;
