@@ -46,18 +46,26 @@ int main(int argc, char **argv)
   for (long long time=0; time<ncycle; ++time)
   {
     idiv->resp_rdy = 1;
-    idiv->req_val  = 1;
 
-    int idx = time % num_inputs;
-
-    for (int i=0; i<len; ++i)
-      idiv->req_msg[i] = inp[idx][i];
-
-    idiv->eval();
-
-    if (idiv->req_rdy)
+    if (time % 337 == 1)
+    {
+      idiv->req_val  = 1;
       for (int i=0; i<len; ++i)
-        ans[i] = oup[idx][i];
+        idiv->req_msg[i] = inp[time % num_inputs][i];
+
+      idiv->eval();
+
+      if (idiv->req_rdy)
+        for (int i=0; i<len; ++i)
+          ans[i] = oup[time % num_inputs][i];
+    }
+    else
+    {
+      idiv->req_val = 0;
+      for (int i=0; i<len; ++i)
+        idiv->req_msg[i] = 0;
+      idiv->eval();
+    }
 
     cycle(idiv);
 
